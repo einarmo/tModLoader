@@ -1,12 +1,16 @@
 --- src/Terraria/Terraria/Projectile.cs
 +++ src/tModLoader/Terraria/Projectile.cs
-@@ -20,12 +_,13 @@
+@@ -20,12 +_,17 @@
  using Terraria.ID;
  using Terraria.Localization;
  using Terraria.Physics;
 +using Terraria.ModLoader;
  using Terraria.Utilities;
  using Terraria.WorldBuilding;
++// Aliases for renames
++using IProjectileSource = Terraria.DataStructures.IEntitySource;
++using ProjectileSource_NPC = Terraria.DataStructures.EntitySource_NPC;
++using ProjectileSource_ProjectileParent = Terraria.DataStructures.EntitySource_ProjectileParent;
  
  namespace Terraria
  {
@@ -148,6 +152,31 @@
 +			if (Type > 0) {
  				if (ProjectileID.Sets.NeedsUUID[Type])
  					projectile.projUUID = projectile.identity;
+ 
+@@ -8214,8 +_,11 @@
+ 				}
+ 			}
+ 
++			// Copied at the bottom. Gotos would be messy.
++			/*
+ 			if (Main.netMode != 0 && Owner == Main.myPlayer)
+ 				NetMessage.SendData(27, -1, -1, null, num);
++			*/
+ 
+ 			if (Owner == Main.myPlayer) {
+ 				if (ProjectileID.Sets.IsAGolfBall[Type] && Damage <= 0) {
+@@ -8330,6 +_,12 @@
+ 			if (Type == 249)
+ 				projectile.frame = Main.rand.Next(5);
+ 
++			ProjectileLoader.OnSpawn(projectile, spawnSource);
++
++			// Copied from above.
++			if (Main.netMode != 0 && Owner == Main.myPlayer)
++				NetMessage.SendData(27, -1, -1, null, num);
++
+ 			return num;
+ 		}
  
 @@ -9050,9 +_,18 @@
  		}
@@ -569,6 +598,20 @@
  				}
  			}
  
+@@ -14454,7 +_,12 @@
+ 		}
+ 
+ 		public static IProjectileSource GetNoneSource() => null;
++
++		// New
++		public IEntitySource GetEntitySource() => GetProjectileSource_FromThis();
++		// Old
+-		public IProjectileSource GetProjectileSource_FromThis() => new ProjectileSource_ProjectileParent(this);
++		internal IProjectileSource GetProjectileSource_FromThis() => new ProjectileSource_ProjectileParent(this);
++
+ 		public static IProjectileSource InheritSource(Projectile projectile) => projectile?.GetProjectileSource_FromThis();
+ 
+ 		private void AI_152_SuperStarSlash() {
 @@ -14480,6 +_,10 @@
  		}
  

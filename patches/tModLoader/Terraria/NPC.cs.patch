@@ -1,10 +1,13 @@
 --- src/Terraria/Terraria/NPC.cs
 +++ src/tModLoader/Terraria/NPC.cs
-@@ -22,10 +_,11 @@
+@@ -22,10 +_,14 @@
  using Terraria.Localization;
  using Terraria.Utilities;
  using Terraria.WorldBuilding;
 +using Terraria.ModLoader;
++// Aliases for renames
++using IProjectileSource = Terraria.DataStructures.IEntitySource;
++using ProjectileSource_NPC = Terraria.DataStructures.EntitySource_NPC;
  
  namespace Terraria
  {
@@ -180,8 +183,15 @@
  			defDefense = defense;
  			defDamage = damage;
  			life = lifeMax;
-@@ -11046,6 +_,10 @@
- 		public IProjectileSource GetProjectileSpawnSource() => new ProjectileSource_NPC(this);
+@@ -11043,9 +_,16 @@
+ 			}
+ 		}
+ 
++		// New
++		public IProjectileSource GetEntitySource() => GetProjectileSpawnSource();
++		// Old
+-		public IProjectileSource GetProjectileSpawnSource() => new ProjectileSource_NPC(this);
++		internal IEntitySource GetProjectileSpawnSource() => new EntitySource_NPC(this);
  
  		public void AI() {
 +			NPCLoader.NPCAI(this);
@@ -801,6 +811,18 @@
  			if (Main.npc[newNPC].type == 1 && Main.player[num7].RollLuck(180) == 0)
  				Main.npc[newNPC].SetDefaults(-4);
  
+@@ -63619,7 +_,10 @@
+ 				ChatHelper.BroadcastChatMessage(NetworkText.FromKey("Announcement.HasAwoken", Main.npc[num].GetTypeNetName()), new Color(175, 75, 255));
+ 		}
+ 
+-		public static int NewNPC(int X, int Y, int Type, int Start = 0, float ai0 = 0f, float ai1 = 0f, float ai2 = 0f, float ai3 = 0f, int Target = 255) {
++		internal static int NewNPC(int X, int Y, int Type, int Start = 0, float ai0 = 0f, float ai1 = 0f, float ai2 = 0f, float ai3 = 0f, int Target = 255)
++			=> NewNPC(null, X, Y, Type, Start, ai0, ai1, ai2, ai3, Target);
++
++		public static int NewNPC(IEntitySource source, int X, int Y, int Type, int Start = 0, float ai0 = 0f, float ai1 = 0f, float ai2 = 0f, float ai3 = 0f, int Target = 255) {
+ 			if (Main.getGoodWorld) {
+ 				if (Type == 46)
+ 					Type = 614;
 @@ -63629,7 +_,9 @@
  			}
  
@@ -812,6 +834,15 @@
  				for (int num2 = 199; num2 >= 0; num2--) {
  					if (!Main.npc[num2].active) {
  						num = num2;
+@@ -63668,6 +_,8 @@
+ 						ChatHelper.BroadcastChatMessage(NetworkText.FromKey("Announcement.HasAwoken", Main.npc[num].GetTypeNetName()), new Color(175, 75, 255));
+ 				}
+ 
++				NPCLoader.OnSpawn(Main.npc[num], source);
++
+ 				return num;
+ 			}
+ 
 @@ -63675,7 +_,7 @@
  		}
  

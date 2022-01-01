@@ -42,7 +42,7 @@ namespace Terraria.ModLoader.Container
 			for (int i = 0; i < storage.Count; i++) {
 				Item item = storage[i];
 				if (!item.IsAir) {
-					Item.NewItem(hitbox, item.type, item.stack, prefixGiven: item.prefix);
+					Item.NewItem(null, hitbox, item.type, item.stack, prefixGiven: item.prefix);
 					storage.RemoveItem(user, i);
 				}
 			}
